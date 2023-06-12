@@ -181,11 +181,30 @@ public class SpringSecurityLoginModule extends AbstractKarafLoginModule {
     // If they have AdministerSecurity, grant the Karaf admin role
     if ( getAuthorizationPolicy().isAllowed( AdministerSecurityAction.NAME ) ) {
       principals.add( new RolePrincipal( KARAF_ADMIN ) );
+      principals.addAll( getKarafAdminRolesAndGroup() ); // add actual roles in karaf
     }
 
     succeeded = true;
 
     return true;
+  }
+
+  // POC
+  protected HashSet<Principal> getKarafAdminRolesAndGroup() {
+    HashSet<Principal> adminPrincipals = new HashSet<Principal>();
+    // copying "karaf/etc/users.properties" roles for default installation karaf user
+    String roleNames = "group,admin,manager,viewer,systembundles,ssh";
+    for(String roleName : roleNames.split(",")  ) {
+      adminPrincipals.add( new RolePrincipal( roleName ) );
+    }
+
+    return adminPrincipals;
+    /**
+     * TODO do we need group?
+     *  possibly  add roles to group to follow actual default installation file 'karaf/etc/users.properties'
+     *  karaf = karaf,_g_:admingroup
+     *  _g_\:admingroup = group,admin,manager,viewer,systembundles,ssh
+     */
   }
 
   public boolean abort() throws LoginException {
